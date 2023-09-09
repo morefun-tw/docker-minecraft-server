@@ -21,6 +21,9 @@ RUN --mount=target=/build,source=build \
 COPY --chmod=644 files/sudoers* /etc/sudoers.d
 
 EXPOSE 25565
+EXPOSE 25566
+EXPOSE 25575
+EXPOSE 30066
 
 ARG EASY_ADD_VER=0.8.0
 ADD https://github.com/itzg/easy-add/releases/download/${EASY_ADD_VER}/easy-add_${TARGETOS}_${TARGETARCH}${TARGETVARIANT} /usr/bin/easy-add
