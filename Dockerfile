@@ -72,12 +72,6 @@ RUN curl -fsSL -o /image/Log4jPatcher.jar https://github.com/CreeperHost/Log4jPa
 RUN dos2unix /start* /auto/*
 RUN echo "Replacing env variables in ${REPLACE_ENV_PATHS} that match the prefix ${REPLACE_ENV_VARIABLE_PREFIX} ..."
 
-RUN mc-image-helper interpolate \
-    --replace-env-file-suffixes="${REPLACE_ENV_SUFFIXES}" \
-    --replace-env-excludes="${REPLACE_ENV_VARIABLES_EXCLUDES}" \
-    --replace-env-exclude-paths="${REPLACE_ENV_VARIABLES_EXCLUDE_PATHS}" \
-    --replace-env-prefix="${REPLACE_ENV_VARIABLE_PREFIX}" \
-    "${REPLACE_ENV_PATHS[@]}"
 
 ENTRYPOINT [ "/start" ]
 HEALTHCHECK --start-period=1m --interval=5s --retries=24 CMD mc-health
