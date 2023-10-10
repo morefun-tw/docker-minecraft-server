@@ -38,14 +38,14 @@ RUN easy-add --var os=${TARGETOS} --var arch=${TARGETARCH}${TARGETVARIANT} \
   --from https://github.com/itzg/{{.app}}/releases/download/{{.version}}/{{.app}}_{{.version}}_{{.os}}_{{.arch}}.tar.gz
 
 RUN easy-add --var os=${TARGETOS} --var arch=${TARGETARCH}${TARGETVARIANT} \
-  --var version=0.12.2 --var app=mc-monitor --file {{.app}} \
+  --var version=0.12.3 --var app=mc-monitor --file {{.app}} \
   --from https://github.com/itzg/{{.app}}/releases/download/{{.version}}/{{.app}}_{{.version}}_{{.os}}_{{.arch}}.tar.gz
 
 RUN easy-add --var os=${TARGETOS} --var arch=${TARGETARCH}${TARGETVARIANT} \
   --var version=1.9.0 --var app=mc-server-runner --file {{.app}} \
   --from https://github.com/itzg/{{.app}}/releases/download/{{.version}}/{{.app}}_{{.version}}_{{.os}}_{{.arch}}.tar.gz
 
-ARG MC_HELPER_VERSION=1.35.2
+ARG MC_HELPER_VERSION=1.36.1
 ARG MC_HELPER_BASE_URL=https://github.com/itzg/mc-image-helper/releases/download/${MC_HELPER_VERSION}
 # used for cache busting local copy of mc-image-helper
 ARG MC_HELPER_REV=1
@@ -64,14 +64,20 @@ ENV TYPE=VANILLA VERSION=LATEST EULA="" UID=1000 GID=1000
 COPY --chmod=755 scripts/start* /
 COPY --chmod=755 bin/ /usr/local/bin/
 COPY --chmod=755 bin/mc-health /health.sh
-COPY --chmod=644 files/log4j2.xml /image/log4j2.xml
-# By default this file gets retrieved from repo, but bundle in image as potential fallback
-COPY --chmod=644 files/cf-exclude-include.json /image/cf-exclude-include.json
+COPY --chmod=644 files/* /image/
 COPY --chmod=755 files/auto /auto
 
 RUN curl -fsSL -o /image/Log4jPatcher.jar https://github.com/CreeperHost/Log4jPatcher/releases/download/v1.0.1/Log4jPatcher-1.0.1.jar
 
 RUN dos2unix /start* /auto/*
+RUN echo "Replacing env variables in ${REPLACE_ENV_PATHS} that match the prefix ${REPLACE_ENV_VARIABLE_PREFIX} ..."
+
+RUN mc-image-helper interpolate \
+    --replace-env-file-suffixes="${REPLACE_ENV_SUFFIXES}" \
+    --replace-env-excludes="${REPLACE_ENV_VARIABLES_EXCLUDES}" \
+    --replace-env-exclude-paths="${REPLACE_ENV_VARIABLES_EXCLUDE_PATHS}" \
+    --replace-env-prefix="${REPLACE_ENV_VARIABLE_PREFIX}" \
+    "${REPLACE_ENV_PATHS[@]}"
 
 ENTRYPOINT [ "/start" ]
 HEALTHCHECK --start-period=1m --interval=5s --retries=24 CMD mc-health
